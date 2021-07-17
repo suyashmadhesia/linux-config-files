@@ -1,0 +1,81 @@
+#get wifi view on status bar
+get_wifi_name(){
+   wifi=$( nmcli dev wifi | grep -E '^[*]' | awk '/*/{print $3}' )
+   echo "${wifi}"
+}
+
+#get wifi strength 
+get_wifi_strength(){
+   strength=$( nmcli dev wifi | grep -E '^[*]' | awk '/*/{print $8}' )
+   echo "${strength}"
+}
+
+#get total RAM status in mb
+get_total_ram(){
+   total_ram=$( free --mega | grep -E '^Mem' | awk '{print $2}' )
+   echo "${total_ram}"
+}
+
+#get used RAM status in mb
+get_used_ram(){
+   used_ram=$( free --mega | grep -E '^Mem' | awk '{print $3}' )
+   echo "${used_ram}"
+}
+
+#get time date of local zone
+get_timestamp(){
+   timestamp=$( timedatectl | grep -E 'Local time' | awk '{print $3,$4,$5,$6}' )
+   echo "${timestamp}"
+}
+
+#showing battery status on the status bar
+battery="BAT0";
+
+has_battery() {
+    if [ -d /sys/class/power_supply/$battery ]; then
+        return 0;
+    fi
+    return 1;
+}
+get_battery_status() {
+    charge="$(get_charge)"
+    echo ""$charge"%"
+}
+
+get_charging_status() {
+    cat "/sys/class/power_supply/$battery/status"
+}
+
+get_charging_state(){
+    state="$(get_charging_status)"
+    echo "${state}"
+}
+
+# getting battery charge percentage
+get_charge() {
+    cat "/sys/class/power_supply/$battery/capacity"
+}
+
+# showing status bar
+get_status() {
+    battery_status="";
+    if $(has_battery); then
+        battery_status="WIFI : $(get_wifi_name) $(get_wifi_strength) | $(get_used_ram)/$(get_total_ram) MB | $(get_battery_status) $(get_charging_state) | $(get_timestamp)";
+    fi
+
+    echo "${battery_status}";
+}
+
+#infinite loop for executing statusbar
+while true; do
+	xsetroot -name "$(get_status)"
+	sleep 1s
+done &
+konsole &
+
+
+# TODO execute nitrogen for showing the desktop wallpaper
+nitrogen --restore &
+
+#executing dwm startx command to initialize dwm
+exec dwm
