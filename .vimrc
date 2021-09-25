@@ -2,16 +2,12 @@ set nocompatible
 set encoding=utf-8
 set laststatus=2
 set number
-set backspace=indent, eol, start
+set backspace=indent,start
 
 filetype plugin indent on
 filetype plugin on
 
 syntax on
-
-# this line use for using the pathogen plugin manager
-# execute pathogen#infect()
-# also have to set up vundle plugin manager
 
 autocmd FileType python set sw=4
 autocmd FileType python set ts=4
